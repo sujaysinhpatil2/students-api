@@ -1,36 +1,40 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/sujaysinhpatil2/students-api/internal/config"
+	"students-api/internal/config"
 )
 
 func main() {
-	// load config
-	cfg := config.MustLoad()
+	// Define the `-config` flag to pass the path to the configuration file
+	configPath := flag.String("config", "", "path to the configuration file")
+	flag.Parse()
 
-	// database setup
+	// Load the configuration
+	cfg := config.MustRead(*configPath)
 
-	// setup router
+	// Database setup
+
+	// Setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to students api"))
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Welcome to students API"))
 	})
 
-	// setup server
+	// Setup server
 	server := http.Server{
-		Addr:    cfg.Address,
+		Addr:    cfg.HTTPServer.Address,
 		Handler: router,
 	}
 
-	fmt.Println("server started")
+	fmt.Println("server started at", cfg.HTTPServer.Address)
 	err := server.ListenAndServe()
 	if err != nil {
-		log.Fatal("failed to staart server")
+		log.Fatal("failed to start server: ", err)
 	}
-
 }
